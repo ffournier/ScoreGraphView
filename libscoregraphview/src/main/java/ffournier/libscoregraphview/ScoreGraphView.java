@@ -17,7 +17,6 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
@@ -89,6 +88,9 @@ public class ScoreGraphView extends View {
         int textSize = 20;
         int colorTitle = Color.BLACK;
         int colorLine = Color.BLACK;
+        boolean animationEnabled = false;
+        int animationDuration = 500;
+
         if (attrs != null) {
             TypedArray a = context.getTheme().obtainStyledAttributes(
                     attrs,
@@ -98,6 +100,8 @@ public class ScoreGraphView extends View {
                 colorLine = a.getColor(R.styleable.ScoreGraphView_colorLine, Color.BLACK);
                 colorTitle = a.getColor(R.styleable.ScoreGraphView_colorTitle, Color.BLACK);
                 textSize = a.getDimensionPixelSize(R.styleable.ScoreGraphView_textSizeTitle, 20);
+                animationEnabled = a.getBoolean(R.styleable.ScoreGraphView_animationEnabled, false);
+                animationDuration = a.getInteger(R.styleable.ScoreGraphView_animationDuration, 500);
 
             } finally {
                 a.recycle();
@@ -109,7 +113,7 @@ public class ScoreGraphView extends View {
         mPaint = new Paint();
         mPaint.setColor(colorLine);
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(4);
+        mPaint.setStrokeWidth(2);
 
         mPaintText = new Paint();
         mPaintText.setTextAlign(Paint.Align.CENTER);
@@ -120,16 +124,19 @@ public class ScoreGraphView extends View {
         mPaintScore.setAlpha(128);
         mPaintScore.setStyle(Paint.Style.FILL);
 
-        mAnimator = ValueAnimator.ofFloat(0, 1.0f);
-        mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        mAnimator.setDuration(2000);
-        mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                percent = (float) valueAnimator.getAnimatedValue();
-                invalidate();
-            }
-        });
+
+        if (animationEnabled) {
+            mAnimator = ValueAnimator.ofFloat(0, 1.0f);
+            mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+            mAnimator.setDuration(animationDuration);
+            mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    percent = (float) valueAnimator.getAnimatedValue();
+                    invalidate();
+                }
+            });
+        }
 
     }
 
@@ -199,7 +206,6 @@ public class ScoreGraphView extends View {
         float left = centerX - widthRect / 2.0f + margin;
         float factor = scoreFactor.mScore * percent ;
         float right = left +  (widthRect - margin) * factor;
-        Log.e("TAG01", " Value of percent" + percent + ",   " + right);
 
         RectF rectScore = new RectF(left , centerY - heightRect / 2.0f + margin ,
                 right,centerY + heightRect / 2.0f - margin );
@@ -301,9 +307,9 @@ public class ScoreGraphView extends View {
     private void drawPolygon(Canvas canvas,List<ScoreFactor> scoreFactors, int width, int height) {
         float radius;
         if (width > height) {
-            radius = height * 0.4f;
+            radius = height * 0.3f;
         } else {
-            radius = width * 0.4f;
+            radius = width * 0.3f;
         }
 
         float centerX = width /2.0f;

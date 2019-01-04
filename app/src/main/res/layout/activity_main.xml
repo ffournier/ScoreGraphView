@@ -1,27 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="@color/colorPrimary">
 
-    <!--<TextView
-        android:layout_width="wrap_content"
+    <EditText
+        android:id="@+id/edt_nb_score_graph"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:inputType="number"
+        android:background="@color/colorAccent"/>
+
+    <Button
+        android:id="@+id/btn_valid"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />-->
+        android:text="OK"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"/>
 
-    <ffournier.libscoregraphview.ScoreGraphView
-        android:id="@+id/score_graph_view"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:textSizeTitle="30sp"
-        app:colorLine="@color/colorPrimary"
-        app:colorTitle="@color/colorAccent"/>
+        android:layout_below="@id/edt_nb_score_graph"
+        android:layout_above="@id/btn_valid"
+        android:orientation="vertical">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-</android.support.constraint.ConstraintLayout>
+            <LinearLayout
+                android:id="@+id/ll_score"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_color"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_title"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>
