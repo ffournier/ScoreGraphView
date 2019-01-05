@@ -21,21 +21,26 @@ This library provide a tool to display a score into a graphic.
 # Screenshot
 
 
-Screenshot MainActivity
+## Screenshot MainActivity
+
 ![alt text](device-2019-01-05-194008.png)
 
 
-Screenshot 10 dimensions
+## Screenshot 10 dimensions
+
 ![alt text](device-2019-01-05-194019.png)
 
 
-Screenshot 2 dimensions
+## Screenshot 2 dimensions
+
 ![alt text](device-2019-01-05-194031.png)
 
 
-Screenshot 1 dimensions
+## Screenshot 1 dimensions
+
 ![alt text](device-2019-01-05-194042.png)
 
 
-Screenshot 3 dimensions
+## Screenshot 3 dimensions
+
 ![alt text](device-2019-01-05-194054.png)
