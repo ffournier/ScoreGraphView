@@ -34,7 +34,7 @@ public class ScoreFactor implements Parcelable {
      * Constructor Parcelable
      * @param in : Parcel
      */
-    protected ScoreFactor(Parcel in) {
+    private ScoreFactor(Parcel in) {
         mScore = in.readFloat();
         mTitle = in.readString();
         mColor = in.readInt();

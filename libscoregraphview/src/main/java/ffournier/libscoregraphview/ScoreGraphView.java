@@ -376,6 +376,7 @@ public class ScoreGraphView extends View {
      */
     private void drawPolygon(Canvas canvas, List<ScoreFactor> scoreFactors, float centerX, float centerY, float radius, boolean outer) {
 
+        //
         float angle = (float) (Math.PI * 2 / scoreFactors.size());
         float angleInner = angle / 2;
         //float innerRayon = (float) (radius * Math.cos(angle));
@@ -385,6 +386,8 @@ public class ScoreGraphView extends View {
 
         float p1x = (float) (p0x + Math.cos(-1 * angleInner) * lengthSide);
         float p1y = (float) (p0y - Math.sin(-1 * angleInner) * lengthSide);
+
+        // draw lines of score or inner line of graph
         Path path = new Path();
         canvas.save();
         for (int i = 0 ; i < scoreFactors.size() ; ++i) {
@@ -401,6 +404,7 @@ public class ScoreGraphView extends View {
         }
         canvas.restore();
 
+        // if outer (score graph)
         if (outer) {
             float pxScore;
             float pyScore;
@@ -410,6 +414,7 @@ public class ScoreGraphView extends View {
 
             float ang = (float) (-1 * Math.PI / 2);
             float factor;
+            // draw title of score graph
             for (int i = 0 ; i < scoreFactors.size() ; ++i) {
                 factor = scoreFactors.get(i).mScore * percent;
                 px = (float) (centerX + Math.cos(ang) * radius);
@@ -475,6 +480,7 @@ public class ScoreGraphView extends View {
                 ang += angle;
             }
             if (pathScore != null) {
+                // fill color of graph
                 pathScore.close();
                 float[] stops = new float[scoreFactors.size() + 1];
                 int[] colorsGradient = new int[scoreFactors.size() + 1];

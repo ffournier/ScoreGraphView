@@ -8,9 +8,12 @@ import java.util.List;
 import ffournier.libscoregraphview.ScoreFactor;
 import ffournier.libscoregraphview.ScoreGraphView;
 
+/**
+ * Display the Score Graph
+ */
 public class ScoreGraphActivity extends AppCompatActivity {
 
-    ScoreGraphView scoreGraphView;
+    private ScoreGraphView scoreGraphView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

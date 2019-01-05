@@ -26,13 +26,16 @@ import java.util.Random;
 
 import ffournier.libscoregraphview.ScoreFactor;
 
+/**
+ * Main Activity to choose the scor Graph
+ */
 public class MainActivity extends AppCompatActivity {
 
-    LinearLayout mLLScoreColor;
-    LinearLayout mLLScoreTitle;
-    LinearLayout mLLScoreScore;
-    EditText mEdtNbScore;
-    Button mBtnOK;
+    private LinearLayout mLLScoreColor;
+    private LinearLayout mLLScoreTitle;
+    private LinearLayout mLLScoreScore;
+    private EditText mEdtNbScore;
+    private Button mBtnOK;
 
     private int mNbScore = 1;
     public static final String KEY_LIST_FACTOR = "ffournier.sample.graphpolygon.list_factor";
@@ -95,6 +98,10 @@ public class MainActivity extends AppCompatActivity {
         refreshLayouts();
     }
 
+    /**
+     * Get Factors
+     * @return the factors given by user
+     */
     private ArrayList<ScoreFactor> getFactors() {
         ArrayList<ScoreFactor> list = new ArrayList<>();
 
@@ -128,6 +135,9 @@ public class MainActivity extends AppCompatActivity {
         return list;
     }
 
+    /**
+     * Display Input for factors
+     */
     private void refreshLayouts() {
         ArrayList<ScoreFactor> oldFactors = getFactors();
 
@@ -173,6 +183,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Show Color Picker
+     * @param view : the view associate
+     */
     private void showColorPicker(final View view) {
         ColorPickerDialogBuilder
                 .with(MainActivity.this)
