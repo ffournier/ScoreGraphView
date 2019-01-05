@@ -11,6 +11,7 @@
         app:textSizeTitle="12sp"
         app:colorLine="@android:color/black"
         app:colorTitle="@color/colorAccent"
+        app:strokeWidth="1"
         app:animationEnabled="true"
         app:animationDuration="1000"/>
 

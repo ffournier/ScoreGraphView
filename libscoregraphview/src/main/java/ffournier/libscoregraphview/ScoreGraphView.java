@@ -17,6 +17,7 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
@@ -24,7 +25,7 @@ import java.util.List;
 
 /**
  * Class ScoreGraphView
- * Display the score of a survey with a graph
+ * Display the score of a list of {@link ScoreFactor} with a graph
  */
 public class ScoreGraphView extends View {
 
@@ -37,9 +38,9 @@ public class ScoreGraphView extends View {
     // Data
     private List<ScoreFactor> mScoreFactors;
     private float percent = 0;
-    private ValueAnimator mAnimator;
-
     private boolean isVisible = false;
+    private ValueAnimator mAnimator;
+    private static float sHeight_Max_Progress;
 
 
     /**
@@ -86,10 +87,13 @@ public class ScoreGraphView extends View {
      */
     private void initView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         int textSize = 20;
+        float strokeWidth = 2.0f;
         int colorTitle = Color.BLACK;
         int colorLine = Color.BLACK;
         boolean animationEnabled = false;
         int animationDuration = 500;
+
+        sHeight_Max_Progress = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
 
         if (attrs != null) {
             TypedArray a = context.getTheme().obtainStyledAttributes(
@@ -100,6 +104,7 @@ public class ScoreGraphView extends View {
                 colorLine = a.getColor(R.styleable.ScoreGraphView_colorLine, Color.BLACK);
                 colorTitle = a.getColor(R.styleable.ScoreGraphView_colorTitle, Color.BLACK);
                 textSize = a.getDimensionPixelSize(R.styleable.ScoreGraphView_textSizeTitle, 20);
+                strokeWidth = a.getFloat(R.styleable.ScoreGraphView_strokeWidth, 2.0f);
                 animationEnabled = a.getBoolean(R.styleable.ScoreGraphView_animationEnabled, false);
                 animationDuration = a.getInteger(R.styleable.ScoreGraphView_animationDuration, 500);
 
@@ -113,7 +118,7 @@ public class ScoreGraphView extends View {
         mPaint = new Paint();
         mPaint.setColor(colorLine);
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(2);
+        mPaint.setStrokeWidth(strokeWidth);
 
         mPaintText = new Paint();
         mPaintText.setTextAlign(Paint.Align.CENTER);
@@ -125,6 +130,7 @@ public class ScoreGraphView extends View {
         mPaintScore.setStyle(Paint.Style.FILL);
 
 
+        // Animation
         if (animationEnabled) {
             mAnimator = ValueAnimator.ofFloat(0, 1.0f);
             mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -150,26 +156,30 @@ public class ScoreGraphView extends View {
         int[] rect = new int[2];
         getLocationOnScreen(rect);
         if (rect[0] < width) {
-            // out of screen
-            if (!isVisible) {
-                mAnimator.start();
-            }
-            isVisible = true;
             if (mScoreFactors != null) {
                 switch (mScoreFactors.size()) {
                     case 0:
                         break;
                     case 1:
+                        // one dimension
                         drawProgressBarGraph(canvas, mScoreFactors.get(0), width, height);
                         break;
                     case 2:
+                        // two dimension
                         drawDiamondGraph(canvas,mScoreFactors ,width, height);
                         break;
                     default:
+                        // x dimension
                         drawPolygon(canvas, mScoreFactors, width, height);
                         break;
                 }
             }
+            // out of screen
+            if (!isVisible && mAnimator != null) {
+                mAnimator.start();
+            }
+            isVisible = true;
+
         } else {
             // refresh all 50 ms
             isVisible = false;
@@ -178,28 +188,49 @@ public class ScoreGraphView extends View {
 
     }
 
+    /**
+     * add Dark or Light in color
+     * @param color : the base color
+     * @param dark : darkness or lightness
+     * @return the new color
+     */
     private int changeDarknessIntToColor(int color, boolean dark) {
         int r =  (( color >> 16) & 0xff);
         int g =  (( color >> 8) & 0xff);
         int b =  (( color     ) & 0xff) ;
         int a =  (( color >> 24) & 0xff);
         float[] hsv = new float[3];
+        // get the color in hsv
         Color.colorToHSV(color, hsv);
         if (dark) {
-            hsv[2] = hsv[2] - 0.2f;
+            // treat value
+            hsv[2] = hsv[2] - 0.3f;
         } else {
-            hsv[1] = hsv[1] - 0.2f;
+            // treat saturation
+            hsv[1] = hsv[1] - 0.3f;
         }
         return Color.HSVToColor(a, hsv);
     }
 
-    private void drawProgressBarGraph(Canvas canvas, ScoreFactor scoreFactor, int width, int height){
+    /**
+     * Draw ScoreFactor for one dimension
+     * @param canvas : the canvas to draw
+     * @param scoreFactor : the scoreFactor to apply
+     * @param width : the width of drawing
+     * @param height : the height of drawing
+     */
+    private void drawProgressBarGraph(Canvas canvas, ScoreFactor scoreFactor, int width, int height) {
 
+        // calculate center of graph
         float centerX = width / 2.0f;
         float centerY = height / 2.0f;
 
         float widthRect = width * 0.8f;
         float heightRect = height * 0.2f;
+        if (heightRect > sHeight_Max_Progress) {
+            heightRect = sHeight_Max_Progress;
+        }
+
         float radius = 0.5f;
         float margin = mPaint.getStrokeWidth() * 3;
 
@@ -207,6 +238,7 @@ public class ScoreGraphView extends View {
         float factor = scoreFactor.mScore * percent ;
         float right = left +  (widthRect - margin) * factor;
 
+        // Draw Progress Bar inner
         RectF rectScore = new RectF(left , centerY - heightRect / 2.0f + margin ,
                 right,centerY + heightRect / 2.0f - margin );
         LinearGradient gradient = new LinearGradient(rectScore.left, rectScore.top, rectScore.right, rectScore.bottom,
@@ -216,16 +248,25 @@ public class ScoreGraphView extends View {
         mPaintScore.setShader(gradient);
         canvas.drawRoundRect(rectScore,heightRect * radius, heightRect * radius,  mPaintScore);
 
+        // Draw Progress Bar outer
         RectF rect = new RectF(centerX - widthRect / 2.0f, centerY - heightRect / 2.0f,
                 centerX + widthRect / 2.0f , centerY + heightRect / 2.0f);
         canvas.drawRoundRect(rect, heightRect * radius, heightRect * radius,  mPaint);
 
+        // Draw Title
         mPaintText.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(scoreFactor.mTitle,centerX,centerY - heightRect, mPaintText);
-
     }
 
-    private void drawDiamondGraph(Canvas canvas,List<ScoreFactor> scoreFactors,  int width, int height){
+    /**
+     * Draw 2 dimension Graph
+     * @param canvas : the canvas to draw
+     * @param scoreFactors : the scoreFactors to apply
+     * @param width : the width of drawing
+     * @param height : the height of drawing
+     */
+    private void drawDiamondGraph(Canvas canvas, List<ScoreFactor> scoreFactors, int width, int height) {
+        // calculate the center of graph
         float centerX = width / 2.0f;
         float centerY = height / 2.0f;
 
@@ -233,77 +274,76 @@ public class ScoreGraphView extends View {
         float triangleBase = height / 2.0f * 0.5f;
         float graduationHeight = height / 30.0f;
 
-        float p0x =  centerX;
-        float p0y =   centerY - triangleBase / 2.0f;
-        float p1x ;
+        float p0x = centerX;
+        float p0y = centerY - triangleBase / 2.0f;
         float p1y = centerY;
-        LinearGradient gradient;
-
 
         Path path = new Path();
 
         //vertical axis
-        path.moveTo(p0x,p0y / 2.0f);
-        path.lineTo(p0x,height - p0y / 2.0f);
+        path.moveTo(p0x, centerY * 2 / 3.f);
+        path.lineTo(p0x, centerY * 4 / 3.f);
         canvas.drawPath(path,mPaint);
 
         //horizontal axis
         path.reset();
-        path.moveTo(centerX - triangleHeight,centerY);
-        path.lineTo(centerX + triangleHeight,centerY);
+        path.moveTo(centerX - triangleHeight, centerY);
+        path.lineTo(centerX + triangleHeight, centerY);
         canvas.drawPath(path,mPaint);
         path.reset();
 
-
         // graduations
         float n = 1f;
-        for(int i=0;i<11;i++) {
+        final int NB_GRADUATION = 10;
+        final float GAP_GRADUATION = (1.0f - -1.0f) / NB_GRADUATION;
+        for(int i = 0 ; i <= NB_GRADUATION ; ++i) {
             path.reset();
             path.moveTo(centerX - triangleHeight * n, centerY - graduationHeight / 2);
             path.lineTo(centerX - triangleHeight * n, centerY + graduationHeight / 2);
             canvas.drawPath(path, mPaint);
-            n -=  0.2f;
+            n -= GAP_GRADUATION;
         }
-        path.reset();
 
         //score left
-        p1x = centerX - triangleHeight * scoreFactors.get(0).mScore * percent;
-        path.reset();
-        path.moveTo(p0x,p0y);
-        path.lineTo(p1x,p1y);
-        path.lineTo(p0x,p0y + triangleBase);
-        path.close();
-        gradient = new LinearGradient(p1x, p1y, centerX, centerY,  scoreFactors.get(0).mColor, 1 , Shader.TileMode.CLAMP);
-        mPaintScore.setDither(true);
-        mPaintScore.setAntiAlias(true);
-        mPaintScore.setShader(gradient);
-        canvas.drawPath(path,mPaintScore);
-
+        drawTriangleDiamond(canvas, centerX, centerY, p0x, centerX - triangleHeight * scoreFactors.get(0).mScore * percent,
+                p0y, p1y, centerX - triangleHeight, centerY - triangleBase * 1 / 3, triangleBase,
+                Paint.Align.LEFT, scoreFactors.get(0));
         //score right
-        p1x = centerX + triangleHeight *  scoreFactors.get(1).mScore * percent;
-        path.reset();
-        path.moveTo(p0x,p0y);
-        path.lineTo(p1x,p1y);
-        path.lineTo(p0x,p0y + triangleBase);
+        drawTriangleDiamond(canvas, centerX, centerY, p0x, centerX + triangleHeight * scoreFactors.get(1).mScore * percent,
+                p0y, p1y, centerX + triangleHeight, centerY - triangleBase * 1 / 3, triangleBase,
+                Paint.Align.RIGHT, scoreFactors.get(1));
+    }
+
+
+    private void drawTriangleDiamond(Canvas canvas, float centerX, float centerY,
+                                     float p0x, float p1x, float p0y, float p1y,
+                                     float p2x, float p2y, float triangleBase,
+                                     Paint.Align align, ScoreFactor factor) {
+        Path path = new Path();
+        //score left
+        path.moveTo(p0x, p0y);
+        path.lineTo(p1x, p1y);
+        path.lineTo(p0x, p0y + triangleBase);
         path.close();
-        gradient = new LinearGradient(p1x, p1y, centerX, centerY,  scoreFactors.get(1).mColor, 1 , Shader.TileMode.CLAMP);
+        LinearGradient gradient = new LinearGradient(p1x, p1y, centerX, centerY,  changeDarknessIntToColor(factor.mColor, true),
+                factor.mColor, Shader.TileMode.CLAMP);
         mPaintScore.setDither(true);
         mPaintScore.setAntiAlias(true);
         mPaintScore.setShader(gradient);
-        canvas.drawPath(path,mPaintScore);
+        canvas.drawPath(path, mPaintScore);
 
-        mPaintText.setTextAlign(Paint.Align.LEFT);
-        canvas.drawText(scoreFactors.get(0).mTitle,centerX - triangleHeight,centerY - triangleBase, mPaintText);
-
-        mPaintText.setTextAlign(Paint.Align.RIGHT);
-        canvas.drawText(scoreFactors.get(1).mTitle,centerX + triangleHeight,centerY - triangleBase, mPaintText);
+        // Draw Title Left
+        mPaintText.setTextAlign(align);
+        canvas.drawText(factor.mTitle, p2x, p2y, mPaintText);
     }
 
-
-    private void drawCircle(Canvas canvas, float radius, float centerX, float centerY, Paint paintScore) {
-        canvas.drawCircle(centerX,centerY,radius,paintScore);
-    }
-
+    /**
+     * Draw Multi Dimension of scoreFactors
+     * @param canvas  the canvas to draw
+     * @param scoreFactors : the scoreFactors to display
+     * @param width : the with of drawing
+     * @param height : the height of drawing
+     */
     private void drawPolygon(Canvas canvas,List<ScoreFactor> scoreFactors, int width, int height) {
         float radius;
         if (width > height) {
@@ -315,14 +355,25 @@ public class ScoreGraphView extends View {
         float centerX = width /2.0f;
         float centerY = height / 2.0f;
 
+        // draw inner line
         drawPolygon(canvas, scoreFactors, centerX, centerY, radius * 0.8f, false);
         drawPolygon(canvas, scoreFactors, centerX, centerY, radius * 0.6f, false);
         drawPolygon(canvas, scoreFactors, centerX, centerY, radius * 0.4f, false);
 
+        // draw score factors
         drawPolygon(canvas, scoreFactors, centerX, centerY, radius, true);
 
     }
 
+    /**
+     * Draw Polygon of X dimensions
+     * @param canvas : the canvas to draw
+     * @param scoreFactors : the score factors to display
+     * @param centerX : the center in axe X
+     * @param centerY : the center in axe Y
+     * @param radius : the radius of circle
+     * @param outer : if inner ou score graph
+     */
     private void drawPolygon(Canvas canvas, List<ScoreFactor> scoreFactors, float centerX, float centerY, float radius, boolean outer) {
 
         float angle = (float) (Math.PI * 2 / scoreFactors.size());

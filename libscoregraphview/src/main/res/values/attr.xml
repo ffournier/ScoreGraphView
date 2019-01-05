@@ -4,6 +4,7 @@
         <attr name="colorLine" format="color" />
         <attr name="colorTitle" format="color"/>
         <attr name="textSizeTitle" format="dimension"/>
+        <attr name="strokeWidth" format="float"/>
         <attr name="animationEnabled" format="boolean"/>
         <attr name="animationDuration" format="integer"/>
     </declare-styleable>
